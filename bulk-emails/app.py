@@ -94,8 +94,8 @@ def send_emails(n_clicks, subject, message):
         return "Subject and message cannot be empty!", [], []
 
     sender_email = "triveniaditi@gmail.com"
-    sender_password = "dkut nbof tlds hvqs"  # Use an App Password
-    smtp_server = "smtp.gmail.com"
+    sender_email = os.environ.get("SENDER_EMAIL")
+    sender_password = os.environ.get("SENDER_PASSWORD")
     smtp_port = 587
     
     bounced_emails = []
