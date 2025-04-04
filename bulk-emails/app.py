@@ -1,5 +1,6 @@
 import dash
 import base64
+from dotenv import load_dotenv
 import os
 from dash import dcc, html, Input, Output, State, dash_table
 import dash_bootstrap_components as dbc
@@ -93,7 +94,7 @@ def send_emails(n_clicks, subject, message):
     if not subject or not message:
         return "Subject and message cannot be empty!", [], []
 
-    sender_email = "triveniaditi@gmail.com"
+    load_dotenv()
     sender_email = os.environ.get("SENDER_EMAIL")
     sender_password = os.environ.get("SENDER_PASSWORD")
     smtp_port = 587
