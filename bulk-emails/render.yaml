@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: dash-app
+    runtime: python
+    buildCommand: ""
+    startCommand: gunicorn app:server
+    plan: free
