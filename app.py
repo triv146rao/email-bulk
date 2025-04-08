@@ -97,6 +97,7 @@ def send_emails(n_clicks, subject, message):
     load_dotenv()
     sender_email = os.environ.get("SENDER_EMAIL")
     sender_password = os.environ.get("SENDER_PASSWORD")
+    smtp_server="smtp.gmail.com"
     smtp_port = 587
     
     bounced_emails = []
