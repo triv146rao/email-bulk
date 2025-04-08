@@ -21,6 +21,7 @@ df = pd.DataFrame()
 attachment_data = None
 attachment_filename = None
 click_logs = []
+bounced_emails_cache = []
 
 # Layout
 app.layout = dbc.Container([
@@ -35,9 +36,6 @@ app.layout = dbc.Container([
 
     html.Div(id='file-info', className="mb-3"),
     dash_table.DataTable(id='email-table', page_size=5),
-
-    dbc.Button("Download Excel", id="download-excel-btn", color="secondary", className="mt-3"),
-    dcc.Download(id="download-excel"),
 
     dcc.Input(id='email-subject', type='text', placeholder='Enter email subject', className="form-control mt-3"),
     dcc.Textarea(id='message', placeholder='Enter your message here', className="form-control mt-3"),
@@ -54,7 +52,9 @@ app.layout = dbc.Container([
     html.Div(id='status', className="mt-3 text-success"),
 
     html.H3("Bounced Emails"),
-    dash_table.DataTable(id='bounced-emails', page_size=5)
+    dash_table.DataTable(id='bounced-emails', page_size=5),
+    dbc.Button("Download Bounced Emails", id="download-bounced-btn", color="danger", className="mt-2"),
+    dcc.Download(id="download-bounced")
 ], className="mt-4")
 
 # File upload callback
@@ -100,6 +100,8 @@ def store_attachment(contents, filename):
     [State('email-subject', 'value'), State('message', 'value')]
 )
 def send_emails(n_clicks, subject, message):
+    global bounced_emails_cache
+
     if not n_clicks or df.empty:
         return "Please upload an email list and enter a subject & message.", [], []
 
@@ -159,6 +161,9 @@ def send_emails(n_clicks, subject, message):
 
         server.quit()
 
+        # Cache bounced emails for download
+        bounced_emails_cache = bounced_emails.copy()
+
         if bounced_emails:
             bounced_df = pd.DataFrame(bounced_emails)
             bounced_df.to_csv("bounced_emails_log.csv", mode='a', header=False, index=False)
@@ -169,20 +174,21 @@ def send_emails(n_clicks, subject, message):
     except Exception as e:
         return f"Error: {e}", [], []
 
-# Excel download
+# Download bounced emails as Excel
 @app.callback(
-    Output("download-excel", "data"),
-    Input("download-excel-btn", "n_clicks"),
+    Output("download-bounced", "data"),
+    Input("download-bounced-btn", "n_clicks"),
     prevent_initial_call=True
 )
-def download_excel(n_clicks):
-    if df.empty:
+def download_bounced_emails(n_clicks):
+    if not bounced_emails_cache:
         return dash.no_update
 
     output = io.BytesIO()
-    df.to_excel(output, index=False)
+    bounced_df = pd.DataFrame(bounced_emails_cache)
+    bounced_df.to_excel(output, index=False)
     output.seek(0)
-    return dcc.send_bytes(output.read(), "uploaded_data.xlsx")
+    return dcc.send_bytes(output.read(), "bounced_emails.xlsx")
 
 # Link click tracker
 @server.route("/track_click/<click_id>")
