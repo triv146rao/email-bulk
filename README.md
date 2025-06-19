@@ -1,2 +1,2 @@
 # email-bulk
-Bulk emails 
+Bulk email application developed using Dash
